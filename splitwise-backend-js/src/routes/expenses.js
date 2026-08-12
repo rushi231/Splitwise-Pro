@@ -1,5 +1,7 @@
 const { Router } = require("express");
 const { z } = require("zod");
+const { requireAuth } = require("../middleware/auth");
+
 const { appendEvent, getBalances } = require("../services/ledgerService");
 const { simplifyDebts } = require("../services/debtSimplification");
 
@@ -21,18 +23,16 @@ const addExpenseSchema = z.object({
     .min(1),
   idempotencyKey: z.string().min(1),
 
-  createdBy: z.string().uuid(),
 });
 
-expensesRouter.post("/", async (req, res) => {
+expensesRouter.post("/",requireAuth, async (req, res) => {
   const parsed = addExpenseSchema.safeParse(req.body);
   if (!parsed.success) {
     return res.status(400).json({ error: parsed.error.flatten() });
   }
 
-  const { groupId, splits, totalAmountCents, idempotencyKey, createdBy, ...rest } =
-    parsed.data;
-
+  const { groupId, splits, totalAmountCents, idempotencyKey, ...rest } = parsed.data;
+  const createdBy = req.user.id;
   // Splits must sum exactly to the total - no silent rounding.
   const splitSum = splits.reduce((sum, s) => sum + s.amountCents, 0);
   if (splitSum !== totalAmountCents) {

@@ -1,6 +1,9 @@
 const express = require("express");
 require("dotenv").config();
+const { usersRouter } = require("./routes/users");
+const { groupsRouter } = require("./routes/groups");
 const { expensesRouter } = require("./routes/expenses");
+
 
 const app = express();
 app.use(express.json());
@@ -10,6 +13,8 @@ app.get("/health", (_req, res) => {
 });
 
 app.use("/expenses", expensesRouter);
+app.use("/users", usersRouter);
+app.use("/groups", groupsRouter);
 // TODO: /groups, /users, /settlements routes
 // TODO: auth middleware populate req.user, replace the manual
 

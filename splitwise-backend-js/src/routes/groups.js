@@ -5,9 +5,7 @@ const { requireAuth } = require("../middleware/auth");
 
 const groupsRouter = Router();
 
-// Every route in this file requires a logged-in user. Applying
-// requireAuth once here (instead of on each route individually)
-// means every route below automatically has req.user available.
+
 groupsRouter.use(requireAuth);
 
 const createGroupSchema = z.object({
@@ -93,8 +91,7 @@ const addMemberSchema = z.object({
   userId: z.string().uuid(),
 });
 
-// Add a member to a group. Only existing members can add others -
-// this is a simple authorization rule, not full permissions.
+// Add a member to a group. Only existing members can add others to the group.
 groupsRouter.post("/:groupId/members", async (req, res) => {
   const parsed = addMemberSchema.safeParse(req.body);
   if (!parsed.success) {
@@ -116,7 +113,7 @@ groupsRouter.post("/:groupId/members", async (req, res) => {
     await pool.query(
       `INSERT INTO group_members (group_id, user_id)
        VALUES ($1, $2)
-       ON CONFLICT DO NOTHING`, // adding an existing member is a no-op, not an error
+       ON CONFLICT DO NOTHING`, 
       [groupId, userId]
     );
 
