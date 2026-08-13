@@ -82,4 +82,68 @@ expensesRouter.get("/groups/:groupId/settle-up", async (req, res) => {
   }
 });
 
+expensesRouter.delete("/groups/:groupId/expenses/:eventId", requireAuth, async (req, res) => {
+  try {
+    const {groupId, eventId } = req.params;
+    const event = await appendEvent({
+      groupId,
+      type: "expense_deleted",
+      payload: { targetEventId: eventId },
+      createdBy: req.user.id,
+      idempotencyKey: `delete-${eventId}`,
+    }); 
+    return res.status(201).json(event);
+
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ error: "Internal server error" });
+  }
+});
+
+expensesRouter.put("/groups/:groupId/expenses/:eventId", requireAuth, async (req, res) => {
+  const { groupId, eventId } = req.params;
+
+  const parsed = addExpenseSchema.safeParse(req.body);
+  if (!parsed.success) {
+    return res.status(400).json({ error: parsed.error.flatten() });
+  }
+
+  const { splits, totalAmountCents, idempotencyKey, ...rest } = parsed.data;
+  const createdBy = req.user.id;
+
+  const splitSum = splits.reduce((sum, s) => sum + s.amountCents, 0);
+  if (splitSum !== totalAmountCents) {
+    return res.status(400).json({
+      error: `Splits sum to ${splitSum} cents but total is ${totalAmountCents} cents`,
+    });
+  }
+
+  try {
+    // Step 1: cancel the old expense
+    await appendEvent({
+      groupId,
+      type: "expense_deleted",
+      payload: { targetEventId: eventId },
+      createdBy,
+      idempotencyKey: `delete-${eventId}`,
+    });
+
+    // Step 2: record the new version as a fresh expense
+    const newEvent = await appendEvent({
+      groupId,
+      type: "expense_added",
+      payload: { ...rest, totalAmountCents, splits },
+      createdBy,
+      idempotencyKey,
+    });
+
+    return res.status(201).json(newEvent);
+  } catch (err) {
+    if (err.code === "23505") {
+      return res.status(200).json({ message: "Already processed" });
+    }
+    console.error(err);
+    return res.status(500).json({ error: "Internal server error" });
+  }
+});
 module.exports = { expensesRouter };
