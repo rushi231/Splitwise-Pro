@@ -3,19 +3,13 @@ const { pool } = require("../db/pool");
 /**
  * Append an event to the ledger. Idempotency is enforced at the DB level
  * via a UNIQUE constraint on idempotency_key - if a client retries a
- * request (network blip, double-click, etc.) with the same key, this
+ * request  with the same key, this
  * throws a unique_violation instead of double-writing the expense.
  *
  * Callers should catch the unique_violation (pg error code 23505) and
  * treat it as a success (the write already happened).
  *
- * @param {Object} params
- * @param {string} params.groupId
- * @param {string} params.type
- * @param {Object} params.payload
- * @param {string} params.createdBy
- * @param {string} params.idempotencyKey
- * @returns {Promise<import('../models/ledger').LedgerEvent>}
+
  */
 async function appendEvent({ groupId, type, payload, createdBy, idempotencyKey }) {
   const result = await pool.query(
@@ -39,8 +33,7 @@ async function appendEvent({ groupId, type, payload, createdBy, idempotencyKey }
 
 /**
  * Derive current balances for a group by replaying its full event
- * history. This is intentionally the source of truth no cached
- * "balance" column to go stale or drift.
+ * history. 
  *
  * 
  *
@@ -93,4 +86,37 @@ async function getBalances(groupId) {
   return balances;
 }
 
-module.exports = { appendEvent, getBalances };
+
+
+async function seeHistory(groupId) {
+  const result = await pool.query(
+    `SELECT id, type, payload, created_at FROM ledger_events
+     WHERE group_id = $1
+     ORDER BY created_at ASC`,
+    [groupId]
+  );
+
+  const deletedEventIds = new Set();
+
+  for (const row of result.rows) {
+    if (row.type === "expense_deleted") {
+      deletedEventIds.add(row.payload.targetEventId);
+    }
+  }
+
+  const expenses = [];
+
+  for (const row of result.rows) {
+    if (row.type === "expense_added" && !deletedEventIds.has(row.id)) {
+      expenses.push({
+        id: row.id,
+        type: row.type,
+        ...row.payload,
+        createdAt: row.created_at,
+      });
+    }
+  }
+
+  return expenses;
+}
+module.exports = { appendEvent, getBalances, seeHistory };
