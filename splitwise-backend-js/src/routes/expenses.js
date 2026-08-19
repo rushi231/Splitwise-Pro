@@ -2,8 +2,8 @@ const { Router } = require("express");
 const { z } = require("zod"); 
 const { appendEvent, getBalances, seeHistory } = require("../services/ledgerService"); 
 const { simplifyDebts } = require("../services/debtSimplification"); 
-const {seeHistory} = require ("./")  
- 
+ const { requireAuth } = require("../middleware/auth");
+
 const expensesRouter = Router(); 
  
 const addExpenseSchema = z.object({ 

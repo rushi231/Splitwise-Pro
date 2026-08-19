@@ -124,4 +124,37 @@ groupsRouter.post("/:groupId/members", async (req, res) => {
   }
 });
 
+
+groupsRouter.get("/:groupId/members", async (req, res) => {
+  try {
+    const { groupId } = req.params;
+
+    const result = await pool.query(
+      `SELECT u.id, u.display_name, u.email
+       FROM users u
+       JOIN group_members gm 
+        ON gm.user_id = u.id
+       WHERE gm.group_id = $1`,
+      [groupId]
+    );
+
+    res.json(result.rows);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Failed to fetch group members" });
+  }
+});
+
+
+// Add a member to a group. Only existing members can add others to the group.
+groupsRouter.post("/:groupId/members", async (req, res) => {
+  const parsed = addMemberSchema.safeParse(req.body);
+  if (!parsed.success) {
+    return res.status(400).json({ error: parsed.error.flatten() });
+  }
+
+
+
+});
+
 module.exports = { groupsRouter };
