@@ -2,7 +2,6 @@ Splitwise Pro
 
 A backend-focused expense-sharing application inspired by Splitwise. The project is being built to explore REST API design, PostgreSQL data modeling, authentication, event-based financial tracking, idempotent writes, and debt simplification.
 
-Status: Work in progress. The backend is currently the main focus, with additional features planned.
 
 Getting Started
 Prerequisites
@@ -103,12 +102,4 @@ Roadmap
 
 Planned work includes:
 
-Frontend UI
-More complete expense editing and settlement flows
-Recurring expenses
-Additional API test coverage
-Improved authorization and group membership checks
-Production deployment
-Additional Splitwise-style features
-Disclaimer
 
