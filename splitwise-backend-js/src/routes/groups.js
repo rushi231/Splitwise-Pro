@@ -129,6 +129,15 @@ groupsRouter.get("/:groupId/members", async (req, res) => {
   try {
     const { groupId } = req.params;
 
+    const membershipCheck = await pool.query(
+      `SELECT 1 FROM group_members WHERE group_id = $1 AND user_id = $2`,
+      [groupId, req.user.id]
+    );
+    
+    if (membershipCheck.rowCount === 0) {
+      return res.status(403).json({ error: "You are not a member of this group" });
+    }
+
     const result = await pool.query(
       `SELECT u.id, u.display_name, u.email
        FROM users u
@@ -146,15 +155,6 @@ groupsRouter.get("/:groupId/members", async (req, res) => {
 });
 
 
-// Add a member to a group. Only existing members can add others to the group.
-groupsRouter.post("/:groupId/members", async (req, res) => {
-  const parsed = addMemberSchema.safeParse(req.body);
-  if (!parsed.success) {
-    return res.status(400).json({ error: parsed.error.flatten() });
-  }
 
-
-
-});
 
 module.exports = { groupsRouter };
