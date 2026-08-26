@@ -47,7 +47,6 @@ CREATE TABLE ledger_events (
 CREATE INDEX idx_ledger_events_group_id ON ledger_events(group_id);
 CREATE INDEX idx_ledger_events_created_at ON ledger_events(group_id, created_at);
 
--- Recurring expense definitions (Pro feature: Phase 4).
 -- A background job reads these and appends ledger_events on schedule.
 CREATE TABLE recurring_expenses (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),

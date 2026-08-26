@@ -3,8 +3,7 @@ require("dotenv").config();
 const { usersRouter } = require("./routes/users");
 const { groupsRouter } = require("./routes/groups");
 const { expensesRouter } = require("./routes/expenses");
-
-
+const { processRecurringExpenses } = require("./jobs/processRecurringExpenses");
 const app = express();
 app.use(express.json());
 
@@ -22,3 +21,9 @@ const port = process.env.PORT || 3000;
 app.listen(port, () => {
   console.log(`splitwise-backend listening on port ${port}`);
 });
+
+setInterval(() => {
+  processRecurringExpenses().catch((err) => {
+    console.error("Recurring expenses job failed:", err);
+  });
+}, 60 * 1000);

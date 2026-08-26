@@ -133,7 +133,7 @@ groupsRouter.get("/:groupId/members", async (req, res) => {
       `SELECT 1 FROM group_members WHERE group_id = $1 AND user_id = $2`,
       [groupId, req.user.id]
     );
-    
+
     if (membershipCheck.rowCount === 0) {
       return res.status(403).json({ error: "You are not a member of this group" });
     }
@@ -153,6 +153,76 @@ groupsRouter.get("/:groupId/members", async (req, res) => {
     res.status(500).json({ error: "Failed to fetch group members" });
   }
 });
+
+const addRecurringExpenseSchema = z.object({
+  description: z.string().min(1),
+  amountCents: z.number().int().positive(),
+  currency: z.string().length(3),
+  interval: z.enum(["weekly", "monthly"]),
+  paidBy: z.string().uuid(),
+  splitRule: z
+    .array(
+      z.object({
+        userId: z.string().uuid(),
+        amountCents: z.number().int().nonnegative(),
+      })
+    )
+    .min(1),
+});
+  
+groupsRouter.post("/:groupId/recurring-expenses", requireAuth,async(req,res) => {
+    const parsed = addRecurringExpenseSchema.safeParse(req.body);
+    if (!parsed.success) {
+      return res.status(400).json({ error: parsed.error.flatten() });
+    }
+
+    const { groupId } = req.params;
+    const {
+      description,
+      amountCents,
+      currency,
+      interval,
+      paidBy,
+      splitRule,
+    } = parsed.data;
+
+    try{
+      const membershipCheck = await pool.query(
+      `SELECT 1 FROM group_members WHERE group_id = $1 AND user_id = $2`,
+      [groupId, req.user.id]
+    );
+    
+    if (membershipCheck.rowCount === 0) {
+      return res.status(403).json({ error: "You are not a member of this group" });
+    }
+
+    const nextRunAt = new Date();
+      if (interval === "weekly") {
+        nextRunAt.setDate(nextRunAt.getDate() + 7);
+      } else {
+        nextRunAt.setMonth(nextRunAt.getMonth() + 1);
+      }
+      
+    const result = await pool.query(
+      `INSERT INTO recurring_expenses
+      (group_id, description, amount_cents, currency, interval, paid_by, split_rule, next_run_at)
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+      RETURNING id, group_id, description, amount_cents, currency, interval, paid_by, split_rule, next_run_at`,
+      [groupId, description, amountCents, currency, interval, paidBy, JSON.stringify(splitRule), nextRunAt]
+    );
+    return res.status(201).json(result.rows[0]);
+
+    } catch (err) {
+      console.error(err);
+      res.status(500).json({ error: "Internal Server Error" });
+    } 
+  });
+
+
+
+
+
+
 
 
 
