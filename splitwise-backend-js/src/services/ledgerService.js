@@ -53,8 +53,6 @@ async function getBalances(groupId) {
     balances[userId] = (balances[userId] ?? 0) + deltaCents;
   };
 
-  // Track which expense_added events have been reversed by an
-  // expense_deleted event, so we can skip them below.
   const deletedEventIds = new Set();
   for (const row of result.rows) {
     if (row.type === "expense_deleted") {
@@ -65,10 +63,9 @@ async function getBalances(groupId) {
   for (const row of result.rows) {
     if (row.type === "expense_added" && !deletedEventIds.has(row.id)) {
       const payload = row.payload;
-      // The payer is owed the full amount...
-      bump(payload.paidBy, payload.totalAmountCents);
-      // and each participant owes their share (including the
-      // payer, if they're also a participant  nets out correctly).
+      const amount = payload.convertedAmountCents ?? payload.totalAmountCents;
+      console.log("DEBUG amount:", amount, typeof amount);
+      bump(payload.paidBy, amount);
       for (const share of payload.splits) {
         bump(share.userId, -share.amountCents);
       }
@@ -76,8 +73,6 @@ async function getBalances(groupId) {
 
     if (row.type === "settlement") {
       const payload = row.payload;
-      // Paying down a debt payer's net balance goes up (less owed),
-      // receiver's net balance goes down (they've been paid back).
       bump(payload.fromUserId, payload.amountCents);
       bump(payload.toUserId, -payload.amountCents);
     }

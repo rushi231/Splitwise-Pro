@@ -7,6 +7,8 @@ async function processRecurringExpenses() {
      WHERE active = true AND next_run_at <= now()`
   );
 
+
+
   for (const recurring of dueResult.rows) {
     try {
       const splits = recurring.split_rule;
@@ -17,12 +19,13 @@ async function processRecurringExpenses() {
         groupId: recurring.group_id,
         type: "expense_added",
         payload: {
-          description: recurring.description,
-          totalAmountCents: recurring.amount_cents,
-          currency: recurring.currency,
-          paidBy: recurring.paid_by,
-          splits,
-        },
+            description: recurring.description,
+            totalAmountCents: Number(recurring.amount_cents),
+            currency: recurring.currency,
+            paidBy: recurring.paid_by,
+            splits,
+            },
+
         createdBy: recurring.paid_by,
         idempotencyKey,
       });
