@@ -66,12 +66,17 @@ expensesRouter.post("/", requireAuth, async (req, res) => {
     if (currency !== groupCurrency) {
       const exchangeRate = await getExchangeRate(currency, groupCurrency);
       const convertedAmountCents = Math.round(totalAmountCents * exchangeRate);
+      const convertedSplits = splits.map((share) => ({
+        userId: share.userId,
+        amountCents: Math.round(share.amountCents * exchangeRate),
+      }));
 
       payload = {
         ...payload,
         convertedAmountCents,
         convertedCurrency: groupCurrency,
         exchangeRate,
+        convertedSplits,
       };
     }
 

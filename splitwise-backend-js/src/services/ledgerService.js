@@ -2,11 +2,9 @@ const { pool } = require("../db/pool");
 
 /**
  * Append an event to the ledger. Idempotency is enforced at the DB level
- * via a UNIQUE constraint on idempotency_key - if a client retries a
- * request  with the same key, this
- * throws a unique_violation instead of double-writing the expense.
+ * via a UNIQUE constraint on idempotency_key.
  *
- * Callers should catch the unique_violation (pg error code 23505) and
+ * catch the unique_violation (pg error code 23505) and
  * treat it as a success (the write already happened).
  *
 
@@ -61,12 +59,14 @@ async function getBalances(groupId) {
   }
 
   for (const row of result.rows) {
+ 
     if (row.type === "expense_added" && !deletedEventIds.has(row.id)) {
       const payload = row.payload;
       const amount = payload.convertedAmountCents ?? payload.totalAmountCents;
-      console.log("DEBUG amount:", amount, typeof amount);
+      const splitsToUse = payload.convertedSplits ?? payload.splits;
+
       bump(payload.paidBy, amount);
-      for (const share of payload.splits) {
+      for (const share of splitsToUse) {
         bump(share.userId, -share.amountCents);
       }
     }
