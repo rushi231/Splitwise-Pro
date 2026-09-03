@@ -87,9 +87,12 @@ groupsRouter.get("/", async (req, res) => {
   }
 });
 
+
+
 const addMemberSchema = z.object({
   userId: z.string().uuid(),
 });
+
 
 // Add a member to a group. Only existing members can add others to the group.
 groupsRouter.post("/:groupId/members", async (req, res) => {

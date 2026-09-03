@@ -4,6 +4,7 @@ const { usersRouter } = require("./routes/users");
 const { groupsRouter } = require("./routes/groups");
 const { expensesRouter } = require("./routes/expenses");
 const { processRecurringExpenses } = require("./jobs/processRecurringExpenses");
+const {settlementsRouter} = require("./routes/settlements");
 const app = express();
 app.use(express.json());
 
@@ -14,7 +15,7 @@ app.get("/health", (_req, res) => {
 app.use("/expenses", expensesRouter);
 app.use("/users", usersRouter);
 app.use("/groups", groupsRouter);
-// TODO: /groups, /users, /settlements routes
+app.use("/settlements", settlementsRouter);
 // TODO: auth middleware populate req.user, replace the manual
 
 const port = process.env.PORT || 3000;
