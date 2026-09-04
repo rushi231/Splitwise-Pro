@@ -1,0 +1,24 @@
+import { useCallback, useEffect, useState } from "react";
+import * as groupsApi from "../api/groups";
+
+export function useMembers(groupId) {
+  const [members, setMembers] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  const refetch = useCallback(async () => {
+    if (!groupId) return;
+    setLoading(true);
+    try {
+      const data = await groupsApi.listMembers(groupId);
+      setMembers(data);
+    } finally {
+      setLoading(false);
+    }
+  }, [groupId]);
+
+  useEffect(() => {
+    refetch();
+  }, [refetch]);
+
+  return { members, loading, refetch };
+}
