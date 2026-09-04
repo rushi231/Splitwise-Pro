@@ -90,11 +90,10 @@ groupsRouter.get("/", async (req, res) => {
 
 
 const addMemberSchema = z.object({
-  userId: z.string().uuid(),
+  email: z.string().email(),
 });
 
 
-// Add a member to a group. Only existing members can add others to the group.
 groupsRouter.post("/:groupId/members", async (req, res) => {
   const parsed = addMemberSchema.safeParse(req.body);
   if (!parsed.success) {
@@ -102,59 +101,47 @@ groupsRouter.post("/:groupId/members", async (req, res) => {
   }
 
   const { groupId } = req.params;
-  const { userId } = parsed.data;
+  const { email } = parsed.data;
 
   try {
+    const result = await pool.query(
+      `SELECT id FROM users WHERE email = $1`,
+      [email]
+    );
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    const userId = result.rows[0].id;
+
+
     const membershipCheck = await pool.query(
       `SELECT 1 FROM group_members WHERE group_id = $1 AND user_id = $2`,
       [groupId, req.user.id]
     );
+    
     if (membershipCheck.rowCount === 0) {
       return res.status(403).json({ error: "You are not a member of this group" });
     }
 
-    await pool.query(
+    const newMember = await pool.query(
       `INSERT INTO group_members (group_id, user_id)
        VALUES ($1, $2)
        ON CONFLICT DO NOTHING`, 
       [groupId, userId]
     );
-
-    return res.status(201).json({ message: "Member added" });
-  } catch (err) {
-    console.error(err);
-    return res.status(500).json({ error: "Internal server error" });
-  }
-});
-
-
-groupsRouter.get("/:groupId/members", async (req, res) => {
-  try {
-    const { groupId } = req.params;
-
-    const membershipCheck = await pool.query(
-      `SELECT 1 FROM group_members WHERE group_id = $1 AND user_id = $2`,
-      [groupId, req.user.id]
-    );
-
-    if (membershipCheck.rowCount === 0) {
-      return res.status(403).json({ error: "You are not a member of this group" });
+    if (newMember.rowCount == 1) {
+      return res.status(201).json({ message: "Member added" });
     }
-
-    const result = await pool.query(
-      `SELECT u.id, u.display_name, u.email
-       FROM users u
-       JOIN group_members gm 
-        ON gm.user_id = u.id
-       WHERE gm.group_id = $1`,
-      [groupId]
-    );
-
-    res.json(result.rows);
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: "Failed to fetch group members" });
+    else {
+      return res.status(409).json({ error: "This user is already a member of this group." });
+    }
+  }  catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Server error" });
   }
+
 });
 
 const addRecurringExpenseSchema = z.object({

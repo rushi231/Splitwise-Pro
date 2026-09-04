@@ -9,7 +9,7 @@ const TOKEN_EXPIRY = "7d";
 
 
 async function hashPassword(plaintextPassword) {
-  const saltRounds = 10; // higher = slower to hash but harder to brute-force
+  const saltRounds = 10; 
   return bcrypt.hash(plaintextPassword, saltRounds);
 }
 
