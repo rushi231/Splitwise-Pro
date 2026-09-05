@@ -1,0 +1,13 @@
+.state {
+  padding: var(--space-8) var(--space-4);
+  text-align: center;
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-sm);
+}
+
+.errorState {
+  padding: var(--space-8) var(--space-4);
+  text-align: center;
+  color: var(--color-danger);
+  font-size: var(--font-size-sm);
+}
