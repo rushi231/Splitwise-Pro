@@ -1,0 +1,93 @@
+.list {
+  background: var(--color-surface);
+  border: 0.5px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  border-bottom: 0.5px solid var(--color-border);
+}
+
+.row:last-child {
+  border-bottom: none;
+}
+
+.icon {
+  width: 36px;
+  height: 36px;
+  border-radius: var(--radius-sm);
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--color-accent-bg);
+  color: var(--color-accent);
+  font-weight: 600;
+  font-size: var(--font-size-sm);
+}
+
+.body {
+  flex: 1;
+  min-width: 0;
+}
+
+.description {
+  font-size: var(--font-size-base);
+  font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.meta {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-muted);
+  margin-top: 2px;
+}
+
+.amounts {
+  text-align: right;
+  flex-shrink: 0;
+}
+
+.amount {
+  font-size: var(--font-size-base);
+  font-weight: 500;
+}
+
+.share {
+  font-size: var(--font-size-xs);
+  margin-top: 2px;
+}
+
+.shareOwed {
+  color: var(--color-owed);
+}
+
+.shareOwe {
+  color: var(--color-owe);
+}
+
+.deleteButton {
+  background: none;
+  border: none;
+  color: var(--color-text-muted);
+  font-size: var(--font-size-xs);
+  padding: var(--space-1);
+  margin-left: var(--space-2);
+}
+
+.deleteButton:hover {
+  color: var(--color-danger);
+}
+
+.empty {
+  padding: var(--space-8) var(--space-4);
+  text-align: center;
+  color: var(--color-text-secondary);
+}
