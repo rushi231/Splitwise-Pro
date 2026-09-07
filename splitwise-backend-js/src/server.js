@@ -1,5 +1,6 @@
 const express = require("express");
 const cors = require("cors");
+const cookieParser = require("cookie-parser");
 require("dotenv").config();
 const { usersRouter } = require("./routes/users");
 const { groupsRouter } = require("./routes/groups");
@@ -12,6 +13,7 @@ app.use(cors({
   credentials: true,
 }));
 app.use(express.json());
+app.use(cookieParser());
 
 app.get("/health", (_req, res) => {
   res.json({ status: "ok" });
@@ -21,7 +23,6 @@ app.use("/expenses", expensesRouter);
 app.use("/users", usersRouter);
 app.use("/groups", groupsRouter);
 app.use("/settlements", settlementsRouter);
-// TODO: auth middleware populate req.user, replace the manual
 
 const port = process.env.PORT || 3000;
 app.listen(port, () => {

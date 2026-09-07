@@ -5,6 +5,15 @@ const { hashPassword, verifyPassword, generateToken, requireAuth } = require("..
 
 const usersRouter = Router();
 
+function setAuthCookie(res, token) {
+  res.cookie("token", token, {
+    httpOnly: true,
+    sameSite: "lax",
+    secure: process.env.NODE_ENV === "production",
+    maxAge: 7 * 24 * 60 * 60 * 1000,
+  });
+}
+
 const signupSchema = z.object({
   email: z.string().email(),
   displayName: z.string().min(1),
@@ -31,10 +40,10 @@ usersRouter.post("/signup", async (req, res) => {
 
     const user = result.rows[0];
     const token = generateToken({ id: user.id, email: user.email });
+    setAuthCookie(res, token);
 
     return res.status(201).json({
       user: { id: user.id, email: user.email, displayName: user.display_name },
-      token,
     });
   } catch (err) {
     if (err.code === "23505") {
@@ -65,9 +74,7 @@ usersRouter.post("/login", async (req, res) => {
     );
     const user = result.rows[0];
 
-    // Deliberately vague error message ("invalid credentials") for
-    // both "no such user" and "wrong password" - don't leak which
-    // one it was, that helps attackers enumerate valid emails.
+
     if (!user || !user.password_hash) {
       return res.status(401).json({ error: "Invalid email or password" });
     }
@@ -78,9 +85,9 @@ usersRouter.post("/login", async (req, res) => {
     }
 
     const token = generateToken({ id: user.id, email: user.email });
+    setAuthCookie(res, token);
     return res.json({
       user: { id: user.id, email: user.email, displayName: user.display_name },
-      token,
     });
   } catch (err) {
     console.error(err);
@@ -88,6 +95,14 @@ usersRouter.post("/login", async (req, res) => {
   }
 });
 
+usersRouter.post("/logout", (req, res) => {
+  res.clearCookie("token", {
+    httpOnly: true,
+    sameSite: "lax",
+    secure: process.env.NODE_ENV === "production",
+  });
+  return res.json({ message: "Logged out" });
+});
 
 usersRouter.get("/me", requireAuth, async (req, res) => {
   try {
