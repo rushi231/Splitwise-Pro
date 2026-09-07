@@ -1,0 +1,48 @@
+.panel {
+  background: var(--color-surface-sunken);
+  border-radius: var(--radius-lg);
+  padding: var(--space-4);
+  margin-bottom: var(--space-5);
+}
+
+.title {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+  margin-bottom: var(--space-3);
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-2) 0;
+}
+
+.rowYou {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-2) 0;
+  font-weight: 500;
+}
+
+.name {
+  font-size: var(--font-size-base);
+}
+
+.amount {
+  font-size: var(--font-size-base);
+  font-weight: 500;
+}
+
+.owed {
+  color: var(--color-owed);
+}
+
+.owe {
+  color: var(--color-owe);
+}
+
+.settled {
+  color: var(--color-text-muted);
+}

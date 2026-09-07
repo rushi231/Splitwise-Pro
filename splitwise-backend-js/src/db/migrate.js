@@ -4,8 +4,7 @@ const { pool } = require("./pool");
 
 // Minimal migration runner: tracks applied migrations in a table,
 // runs any .sql file in migrations/ that hasn't been applied yet,
-// in filename order. Good enough for a solo project; swap for
-// node-pg-migrate or Prisma Migrate if this grows.
+// in filename order.
 
 async function ensureMigrationsTable() {
   await pool.query(`

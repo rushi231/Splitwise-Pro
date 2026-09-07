@@ -21,9 +21,12 @@ export function TopNav() {
         Splitwise Pro
       </div>
       <div className={styles.right}>
-        <button className={styles.userButton} onClick={logout}>
+        <span className={styles.userInfo}>
           <span className={styles.avatar}>{initials(user?.displayName)}</span>
           {user?.displayName}
+        </span>
+        <button className={styles.logoutButton} onClick={logout}>
+          Log out
         </button>
       </div>
     </header>

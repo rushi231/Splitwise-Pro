@@ -33,9 +33,7 @@ groupsRouter.post("/", async (req, res) => {
     );
     const group = groupResult.rows[0];
 
-    // The creator is automatically a member of their own group -
-    // do this in the same transaction so we never end up with a
-    // group that has no members if the second insert failed.
+    
     await client.query(
       `INSERT INTO group_members (group_id, user_id) VALUES ($1, $2)`,
       [group.id, req.user.id]
@@ -84,6 +82,34 @@ groupsRouter.get("/", async (req, res) => {
   } catch (err) {
     console.error(err);
     return res.status(500).json({ error: "Internal server error" });
+  }
+});
+
+groupsRouter.get("/:groupId/members", async (req, res) => {
+  try {
+    const { groupId } = req.params;
+
+    const membershipCheck = await pool.query(
+      `SELECT 1 FROM group_members WHERE group_id = $1 AND user_id = $2`,
+      [groupId, req.user.id]
+    );
+
+    if (membershipCheck.rowCount === 0) {
+      return res.status(403).json({ error: "You are not a member of this group" });
+    }
+
+    const result = await pool.query(
+      `SELECT u.id, u.display_name, u.email
+       FROM users u
+       JOIN group_members gm ON gm.user_id = u.id
+       WHERE gm.group_id = $1`,
+      [groupId]
+    );
+
+    res.json(result.rows);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Failed to fetch group members" });
   }
 });
 
