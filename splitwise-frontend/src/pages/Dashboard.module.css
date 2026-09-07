@@ -1,0 +1,78 @@
+.page {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.body {
+  display: flex;
+  flex: 1;
+}
+
+.content {
+  flex: 1;
+  padding: var(--space-5) var(--space-6);
+  max-width: var(--content-max-width);
+}
+
+.contentHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--space-4);
+}
+
+.groupName {
+  font-size: var(--font-size-md);
+  font-weight: 500;
+}
+
+.headerActions {
+  display: flex;
+  gap: var(--space-2);
+}
+
+.secondaryButton {
+  height: 34px;
+  padding: 0 var(--space-3);
+  background: var(--color-surface);
+  color: var(--color-text-primary);
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-sm);
+  font-size: var(--font-size-sm);
+}
+
+.secondaryButton:hover {
+  background: var(--color-surface-sunken);
+}
+
+.addButton {
+  height: 34px;
+  padding: 0 var(--space-3);
+  background: var(--color-text-primary);
+  color: white;
+  border: none;
+  border-radius: var(--radius-sm);
+  font-size: var(--font-size-sm);
+  font-weight: 500;
+}
+
+.addButton:hover {
+  opacity: 0.85;
+}
+
+.emptyGroups {
+  padding: var(--space-8) var(--space-4);
+  text-align: center;
+  color: var(--color-text-secondary);
+}
+
+@media (max-width: 640px) {
+  .body {
+    flex-direction: column;
+  }
+  .content {
+    padding: var(--space-4);
+    max-width: 100%;
+  }
+}
