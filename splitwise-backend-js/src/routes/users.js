@@ -8,7 +8,7 @@ const usersRouter = Router();
 function setAuthCookie(res, token) {
   res.cookie("token", token, {
     httpOnly: true,
-    sameSite: "lax",
+    sameSite: "none",
     secure: process.env.NODE_ENV === "production",
     maxAge: 7 * 24 * 60 * 60 * 1000,
   });
@@ -98,7 +98,7 @@ usersRouter.post("/login", async (req, res) => {
 usersRouter.post("/logout", (req, res) => {
   res.clearCookie("token", {
     httpOnly: true,
-    sameSite: "lax",
+    sameSite: "none",
     secure: process.env.NODE_ENV === "production",
   });
   return res.json({ message: "Logged out" });
