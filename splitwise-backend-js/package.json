@@ -18,7 +18,7 @@
     "bcryptjs": "^2.4.3",
     "jsonwebtoken": "^9.0.2",
     "cors": "^2.8.6",
-    "cookie-parser": "^1.4.6"
+    "cookie-parser": "^1.4.7"
   },
   "devDependencies": {
     "vitest": "^2.0.5"
